@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/MobiusChess.iml" filepath="$PROJECT_DIR$/MobiusChess.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mobiuschessbackend/mobiuschessbackend.iml" filepath="$PROJECT_DIR$/mobiuschessbackend/mobiuschessbackend.iml" />
     </modules>
   </component>
 </project>

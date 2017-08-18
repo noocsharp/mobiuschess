@@ -1,0 +1,3 @@
+[submodule "mobiuschessbackend"]
+	path = mobiuschessbackend
+	url = https://noocsharp@bitbucket.org/noocsharp/mobiuschessbackend.git
