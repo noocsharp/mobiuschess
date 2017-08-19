@@ -11,6 +11,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import noocsharp.Chessboard;
 import noocsharp.piece.Bishop;
@@ -22,6 +23,8 @@ import noocsharp.piece.Piece;
 import noocsharp.piece.Queen;
 import noocsharp.piece.Rook;
 import noocsharp.utilities.Color;
+import noocsharp.utilities.Tuple;
+import noocsharp.utilities.Utilities;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,6 +51,12 @@ public class ChessboardView extends View {
 
     int cellWidth;
     int cellHeight;
+
+    int selectionX;
+    int selectionY;
+
+    int destinationX;
+    int destinationY;
 
 
     public ChessboardView(Context context, AttributeSet attrs) {
@@ -92,8 +101,52 @@ public class ChessboardView extends View {
 
         row1 = getResources().getDrawable(R.drawable.chess_board_row1);
         row2 = getResources().getDrawable(R.drawable.chess_board_row2);
+
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float eventX = event.getX();
+        float eventY = event.getY();
+
+        int gridX = (int) (eventX/cellWidth);
+        int gridY = (int) (eventY/cellHeight);
+
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.i(TAG, String.format("position: %d, %d", gridX, gridY));
+
+            selectionX = gridX;
+            selectionY = gridY;
+
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            Log.i(TAG, String.format("position: %d, %d", gridX, gridY));
+
+            destinationX = gridX;
+            destinationY = gridY;
+
+            // Checks if another piece in in the destination square
+            Piece p = Utilities.searchForPos(board.getPiecesArray(), new Tuple<>(selectionX, selectionY));
+            Piece des = Utilities.searchForPos(board.getPiecesArray(), new Tuple<>(destinationX, destinationY));
+
+            if (p != des && p != null) {
+                board.makeMove(new Tuple<>(selectionX, selectionY), new Tuple<>(destinationX, destinationY));
+                invalidate();
+                /*
+                if (p != null) {
+                    board.getPiecesArray().remove(des);
+                    p.setPos(new Tuple<>(destinationX, destinationY));
+                    invalidate();
+                }
+                */
+            }
+
+        } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
+
+        }
+
+        //return super.onTouchEvent(event);
+        return true;
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -135,12 +188,6 @@ public class ChessboardView extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-    }
-
-    @Override
-    public void setOnTouchListener(OnTouchListener l) {
-        super.setOnTouchListener(l);
-        invalidate();
     }
 
     public Drawable getConfiguredDrawableFromPiece(Piece p) {
