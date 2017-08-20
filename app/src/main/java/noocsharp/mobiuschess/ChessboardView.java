@@ -58,6 +58,14 @@ public class ChessboardView extends View {
     int destinationX;
     int destinationY;
 
+    int downX;
+    int downY;
+
+    int upX;
+    int upY;
+
+    boolean tapSelection = false;
+    boolean down = false;
 
     public ChessboardView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -112,11 +120,50 @@ public class ChessboardView extends View {
         int gridX = (int) (eventX/cellWidth);
         int gridY = (int) (eventY/cellHeight);
 
+
+        if (event.getAction() == MotionEvent.ACTION_UP && down) {
+            // if tap selection isn't active
+            if (!tapSelection) {
+                if (downX == gridX && downY == gridY) {
+                    tapSelection = true;
+
+                    selectionX = downX;
+                    selectionY = downY;
+
+                    Piece p = Utilities.searchForPos(board.getPiecesArray(), new Tuple<>(selectionX, selectionY));
+                    if (p != null) {
+                        Log.i(TAG, String.format("p.hasMoved: %b, p.type: %s", p.hasMoved, p.getInfluence(board.getPiecesArray(), 8, 14)));
+                    }
+                } else {
+                    makeMoveFromSelection(downX, downY, gridX, gridY);
+                    invalidate();
+                }
+            } else if (downX == gridX && downY == gridY) {
+                Log.i(TAG, "move made");
+                makeMoveFromSelection(selectionX, selectionY, downX, downY);
+                invalidate();
+                tapSelection = false;
+                selectionX = -1;
+                selectionY = -1;
+            }
+
+            downX = -1;
+            downY = -1;
+            down = false;
+
+
+            Log.i(TAG, String.format("gridX: %d, gridY: %d, downX: %d, downY: %d, selectionX: %d, selectionY: %d, tapSelection: %b", gridX, gridY, downX, downY, selectionX, selectionY, tapSelection));
+        } else if (event.getAction() == MotionEvent.ACTION_DOWN && !down) {
+            // saves position of down press for dragging
+            downX = gridX;
+            downY = gridY;
+
+            down = true;
+            Log.i(TAG, String.format("gridX: %d, gridY: %d, downX: %d, downY: %d, selectionX: %d, selectionY: %d, tapSelection: %b", gridX, gridY, downX, downY, selectionX, selectionY, tapSelection));
+        }
+            /*
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             Log.i(TAG, String.format("position: %d, %d", gridX, gridY));
-
-            selectionX = gridX;
-            selectionY = gridY;
 
         } else if (event.getAction() == MotionEvent.ACTION_UP) {
             Log.i(TAG, String.format("position: %d, %d", gridX, gridY));
@@ -124,11 +171,19 @@ public class ChessboardView extends View {
             destinationX = gridX;
             destinationY = gridY;
 
+            if (!(selectionX == destinationX && selectionY == destinationY)) {
+                selectionX = gridX;
+                selectionY = gridY;
+            } else {
+                if (!tapSelection) {
+                    tapSelection = true;
+                }
+            }
             // Checks if another piece in in the destination square
             Piece p = Utilities.searchForPos(board.getPiecesArray(), new Tuple<>(selectionX, selectionY));
             Piece des = Utilities.searchForPos(board.getPiecesArray(), new Tuple<>(destinationX, destinationY));
 
-            if (p != des && p != null) {
+            if (p != null) {
                 board.makeMove(new Tuple<>(selectionX, selectionY), new Tuple<>(destinationX, destinationY));
                 invalidate();
                 /*
@@ -137,7 +192,12 @@ public class ChessboardView extends View {
                     p.setPos(new Tuple<>(destinationX, destinationY));
                     invalidate();
                 }
-                */
+            } else {
+                if (!tapSelection) {
+
+                } else {
+                    tapSelection = true;
+                }
             }
 
         } else if (event.getAction() == MotionEvent.ACTION_MOVE) {
@@ -145,7 +205,12 @@ public class ChessboardView extends View {
         }
 
         //return super.onTouchEvent(event);
+                */
         return true;
+    }
+
+    private boolean makeMoveFromSelection(int posX, int posY, int desX, int desY) {
+        return board.makeMove(new Tuple<>(posX, posY), new Tuple<>(desX, desY));
     }
 
     @Override
